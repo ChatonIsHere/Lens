@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- GameDir comes from Local.props (gitignored) or -p:GameDir=...; it's the game install to compile against. -->
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Lens</AssemblyName>
+    <RootNamespace>Lens</RootNamespace>
+    <!-- CI passes -p:Version=YY.M.N (CalVer) for each release; local builds are dev builds. -->
+    <Version>0.0.0-dev</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Managed>$(GameDir)\A Township Tale_Data\Managed\</Managed>
+    <MelonLoaderDir>$(GameDir)\MelonLoader\net35\</MelonLoaderDir>
+  </PropertyGroup>
+
+  <Target Name="CheckGameDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(GameDir)' == '' Or !Exists('$(Managed)Root.Township.dll')"
+           Text="Set GameDir to an A Township Tale install with MelonLoader (in Local.props, or -p:GameDir=...). Got '$(GameDir)'." />
+  </Target>
+
+  <!-- MelonInfo needs the version as a constant. -->
+  <Target Name="WriteVersion" BeforeTargets="BeforeCompile">
+    <WriteLinesToFile File="$(IntermediateOutputPath)Version.g.cs" Overwrite="true" WriteOnlyWhenDifferent="true"
+                      Lines="namespace Lens%3B internal static class Build { public const string Version = &quot;$(Version)&quot;%3B }" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)Version.g.cs" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="Root.Township" HintPath="$(Managed)Root.Township.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(Managed)UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="Unity.Postprocessing.Runtime" HintPath="$(Managed)Unity.Postprocessing.Runtime.dll" Private="false" />
+    <Reference Include="Township.PostProcessing" HintPath="$(Managed)Township.PostProcessing.dll" Private="false" />
+    <Reference Include="UnityEngine.XRModule" HintPath="$(Managed)UnityEngine.XRModule.dll" Private="false" />
+    <Reference Include="UnityEngine.VRModule" HintPath="$(Managed)UnityEngine.VRModule.dll" Private="false" />
+    <Reference Include="UnityEngine.TerrainModule" HintPath="$(Managed)UnityEngine.TerrainModule.dll" Private="false" />
+    <Reference Include="MelonLoader" HintPath="$(MelonLoaderDir)MelonLoader.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(MelonLoaderDir)0Harmony.dll" Private="false" />
+  </ItemGroup>
+
+</Project>

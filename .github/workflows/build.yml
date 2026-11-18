@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    paths-ignore: ['**.md']
+  pull_request:
+  workflow_dispatch:
+
+# One release at a time, so two pushes can't take the same version.
+concurrency: build-${{ github.ref }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      # `full`, because main's subset lacks Township.Core.Runtime.
+      - uses: actions/checkout@v4
+        with:
+          repository: ChatonIsHere/att-stubs
+          ref: full
+          path: att-stubs
+      # Each push to main is released as YY.M.N (CalVer): N is one more than this month's last release.
+      - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          p="$(date -u +%y).$(date -u +%-m)."
+          n=$(git ls-remote --tags origin "refs/tags/v$p*" | sed "s|.*/v$p||" | sort -n | tail -1)
+          echo "VERSION=$p$(( ${n:-0} + 1 ))" >> "$GITHUB_ENV"
+      - shell: bash
+        run: dotnet build -c Release "-p:GameDir=$GITHUB_WORKSPACE/att-stubs" ${VERSION:+"-p:Version=$VERSION"}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lens
+          path: bin/Release/Lens.dll
+      - if: env.VERSION != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v$VERSION" bin/Release/Lens.dll --target "$GITHUB_SHA" --title "Lens $VERSION" --generate-notes
