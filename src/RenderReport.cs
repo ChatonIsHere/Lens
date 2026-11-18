@@ -41,7 +41,9 @@ internal static class RenderReport
         var s = new StringBuilder($"Render report, scene {scene}:\n");
         s.Append($"  Quality: MSAA {QualitySettings.antiAliasing}x, shadows {QualitySettings.shadows} to {QualitySettings.shadowDistance:0} m, " +
                  $"{QualitySettings.shadowCascades} cascades, {QualitySettings.shadowResolution} resolution, LOD bias {QualitySettings.lodBias:0.##}, " +
-                 $"{QualitySettings.pixelLightCount} pixel lights, max LOD {QualitySettings.maximumLODLevel}, texture limit {QualitySettings.masterTextureLimit}\n");
+                 $"{QualitySettings.pixelLightCount} pixel lights, max LOD {QualitySettings.maximumLODLevel}, texture limit {QualitySettings.masterTextureLimit}, " +
+                 $"anisotropic {QualitySettings.anisotropicFiltering}, skin weights {QualitySettings.skinWeights}, uploads {QualitySettings.asyncUploadTimeSlice} ms " +
+                 $"into {QualitySettings.asyncUploadBufferSize} MB, soft particles {QualitySettings.softParticles}, realtime probes {QualitySettings.realtimeReflectionProbes}\n");
         s.Append($"  XR: {XRSettings.loadedDeviceName}, eye texture {XRSettings.eyeTextureWidth}x{XRSettings.eyeTextureHeight} at scale " +
                  $"{XRSettings.eyeTextureResolutionScale:0.##}, game view {XRSettings.gameViewRenderMode}\n");
         foreach (var c in Camera.allCameras.OrderBy(c => c.depth))
@@ -54,8 +56,14 @@ internal static class RenderReport
         var lights = Object.FindObjectsOfType<Light>().Where(l => l.isActiveAndEnabled).ToList();
         s.Append($"  Lights on: {lights.Count} (" + string.Join(", ", lights.GroupBy(l => l.type).Select(g => $"{g.Count()} {g.Key}")) + "); with shadows: " +
                  string.Join(", ", lights.Where(l => l.shadows != LightShadows.None).GroupBy(l => $"{l.type} {l.shadows}").Select(g => $"{g.Count()} {g.Key}")) + "\n");
-        foreach (var l in lights.Where(l => l.shadows != LightShadows.None && l.type != LightType.Directional).Take(8))
-            s.Append($"    {l.name}: range {l.range:0} m, {l.renderMode}, resolution {l.shadowResolution}\n");
+        var head = PlayerController.Current != null && PlayerController.Current.Head != null ? PlayerController.Current.Head.position : Vector3.zero;
+        var shadowed = lights.Where(l => l.shadows != LightShadows.None && l.type != LightType.Directional)
+            .OrderBy(l => (l.transform.position - head).sqrMagnitude).ToList();
+        if (shadowed.Count > 0)
+            s.Append($"  Shadowed point and spot lights: {shadowed.Count(l => (l.transform.position - head).magnitude <= 20f)} within 20 m of you, " +
+                     $"{shadowed.Count(l => (l.transform.position - head).magnitude > 20f)} farther\n");
+        foreach (var l in shadowed.Take(8))
+            s.Append($"    {l.name}: {(l.transform.position - head).magnitude:0} m away, range {l.range:0} m, {l.renderMode}, resolution {l.shadowResolution}\n");
         foreach (var v in Object.FindObjectsOfType<PostProcessVolume>().Where(v => v.isActiveAndEnabled))
         {
             var profile = v.HasInstantiatedProfile() ? v.profile : v.sharedProfile;
@@ -68,11 +76,19 @@ internal static class RenderReport
                 .Select(g => $"{g.Count()} {g.Key}")) + "\n");
         foreach (var t in Terrain.activeTerrains.Take(3))
             s.Append($"  Terrain {t.name}: pixel error {t.heightmapPixelError:0.#}, basemap {t.basemapDistance:0} m, detail {t.detailObjectDistance:0} m " +
-                     $"at density {t.detailObjectDensity:0.##}, trees {t.treeDistance:0} m, shadows {t.shadowCastingMode}\n");
+                     $"at density {t.detailObjectDensity:0.##}, trees {t.treeDistance:0} m, shadows {t.shadowCastingMode}, instanced {t.drawInstanced}, " +
+                     $"shader {(t.materialTemplate != null ? t.materialTemplate.shader.name : "built-in")}\n");
         if (Terrain.activeTerrains.Length > 3) s.Append($"  ({Terrain.activeTerrains.Length} terrains)\n");
         int water = Object.FindObjectsOfType<StylizedWaterShader.StylizedWater>().Count(w => w.isActiveAndEnabled && w.useReflection);
         s.Append($"  Water with planar reflections: {water}\n");
-        s.Append($"  Lens settings in use: {(LensMod.Active.Count == 0 ? "none" : string.Join(", ", LensMod.Active))}");
+        var skinned = Object.FindObjectsOfType<SkinnedMeshRenderer>().Where(r => r.enabled && r.gameObject.activeInHierarchy).ToList();
+        s.Append($"  Skinned meshes: {skinned.Count}, {skinned.Count(r => r.updateWhenOffscreen)} animated out of view, {skinned.Count(r => !r.isVisible)} out of view now\n");
+        var meshes = Object.FindObjectsOfType<MeshRenderer>().Where(r => r.enabled && r.gameObject.activeInHierarchy && r.shadowCastingMode != ShadowCastingMode.Off).ToList();
+        s.Append($"  Meshes casting shadows: {meshes.Count}, under 0.5 m across {meshes.Count(r => r.bounds.size.magnitude < 0.5f)}, under 1 m {meshes.Count(r => r.bounds.size.magnitude < 1f)}\n");
+        var lists = Resources.FindObjectsOfTypeAll<ShaderVariantCollection>();
+        s.Append($"  Shader lists loaded: {lists.Length}, warmed {lists.Count(c => c.isWarmedUp)}, {lists.Sum(c => c.variantCount)} variants\n");
+        s.Append($"  Fire effects burning: {Object.FindObjectsOfType<PooledFireEffect>().Count(f => f.isActiveAndEnabled)}\n");
+        s.Append($"  Lens settings at start: {(LensMod.Active.Count == 0 ? "none" : string.Join(", ", LensMod.Active))}");
         return s.ToString();
     }
 }

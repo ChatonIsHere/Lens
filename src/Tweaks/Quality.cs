@@ -53,6 +53,11 @@ internal static class Quality
     private static readonly Held<ShadowResolution> Resolution = new("shadow resolution", () => QualitySettings.shadowResolution, v => QualitySettings.shadowResolution = v);
     private static readonly Held<float> LodBias = new("LOD bias", () => QualitySettings.lodBias, v => QualitySettings.lodBias = v);
     private static readonly Held<int> Lights = new("pixel lights", () => QualitySettings.pixelLightCount, v => QualitySettings.pixelLightCount = v);
+    private static readonly Held<GameViewRenderMode> Desktop = new("desktop view", () => XRSettings.gameViewRenderMode, v => XRSettings.gameViewRenderMode = v);
+    private static readonly Held<AnisotropicFiltering> Aniso = new("anisotropic filtering", () => QualitySettings.anisotropicFiltering, v => QualitySettings.anisotropicFiltering = v);
+    private static readonly Held<SkinWeights> Skin = new("skin weights", () => QualitySettings.skinWeights, v => QualitySettings.skinWeights = v);
+    private static readonly Held<int> UploadMs = new("upload time", () => QualitySettings.asyncUploadTimeSlice, v => QualitySettings.asyncUploadTimeSlice = v);
+    private static readonly Held<int> UploadMb = new("upload buffer", () => QualitySettings.asyncUploadBufferSize, v => QualitySettings.asyncUploadBufferSize = v);
 
     private static float nextCheck;
 
@@ -71,6 +76,11 @@ internal static class Quality
         if (ParseResolution(out var r)) LensMod.Active.Add($"{r} shadow resolution");
         if (LensConfig.LodBias > 0f) LensMod.Active.Add($"LOD bias {LensConfig.LodBias:0.##}");
         if (LensConfig.PixelLights > 0) LensMod.Active.Add($"{LensConfig.PixelLights} pixel lights");
+        if (DesktopMode(out var d)) LensMod.Active.Add($"desktop view {d}");
+        if (AnisoMode(out var a)) LensMod.Active.Add($"anisotropic filtering {a}");
+        if (SkinMode(out var w)) LensMod.Active.Add($"skin weights {w}");
+        if (LensConfig.UploadMs > 0) LensMod.Active.Add($"uploads {LensConfig.UploadMs} ms a frame");
+        if (LensConfig.UploadBufferMb > 0) LensMod.Active.Add($"upload buffer {LensConfig.UploadBufferMb} MB");
     }
 
     // Once a second: anything the game set back since.
@@ -90,6 +100,31 @@ internal static class Quality
         Resolution.Set(ParseResolution(out var resolution), resolution);
         LodBias.Set(LensConfig.LodBias > 0f, LensConfig.LodBias);
         Lights.Set(LensConfig.PixelLights > 0, LensConfig.PixelLights);
+        Desktop.Set(DesktopMode(out var desktop), desktop);
+        Aniso.Set(AnisoMode(out var aniso), aniso);
+        Skin.Set(SkinMode(out var skin), skin);
+        UploadMs.Set(LensConfig.UploadMs > 0, LensConfig.UploadMs);
+        UploadMb.Set(LensConfig.UploadBufferMb > 0, LensConfig.UploadBufferMb);
+    }
+
+    private static bool DesktopMode(out GameViewRenderMode mode)
+    {
+        mode = LensConfig.Off(LensConfig.DesktopView) ? GameViewRenderMode.None : GameViewRenderMode.LeftEye;
+        return LensConfig.Off(LensConfig.DesktopView) || LensConfig.DesktopView.Equals("OneEye", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool AnisoMode(out AnisotropicFiltering mode)
+    {
+        var s = LensConfig.Anisotropic;
+        mode = LensConfig.Off(s) ? AnisotropicFiltering.Disable : s.Equals("Forced", StringComparison.OrdinalIgnoreCase) ? AnisotropicFiltering.ForceEnable : AnisotropicFiltering.Enable;
+        return LensConfig.Off(s) || s.Equals("On", StringComparison.OrdinalIgnoreCase) || s.Equals("Forced", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool SkinMode(out SkinWeights weights)
+    {
+        int n = LensConfig.SkinWeights;
+        weights = n >= 4 ? SkinWeights.FourBones : n >= 2 ? SkinWeights.TwoBones : SkinWeights.OneBone;
+        return n > 0;
     }
 
     private static bool ParseResolution(out ShadowResolution resolution) =>

@@ -24,6 +24,18 @@ internal static class LensConfig
     internal static MelonPreferences_Entry<bool> _bloom;
     internal static MelonPreferences_Entry<bool> _grass;
     internal static MelonPreferences_Entry<bool> _renderReport;
+    internal static MelonPreferences_Entry<string> _desktopView;
+    internal static MelonPreferences_Entry<string> _anisotropic;
+    internal static MelonPreferences_Entry<float> _fireShadowDistance;
+    internal static MelonPreferences_Entry<string> _fireShadowResolution;
+    internal static MelonPreferences_Entry<float> _smallShadowSize;
+    internal static MelonPreferences_Entry<int> _skinWeights;
+    internal static MelonPreferences_Entry<bool> _waterReflections;
+    internal static MelonPreferences_Entry<bool> _terrainInstancing;
+    internal static MelonPreferences_Entry<bool> _offscreenSkinning;
+    internal static MelonPreferences_Entry<int> _uploadMs;
+    internal static MelonPreferences_Entry<int> _uploadBufferMb;
+    internal static MelonPreferences_Entry<bool> _warmShaders;
 
     public static float RenderScale => Math.Max(0f, _renderScale.Value);
     public static int Msaa => _msaa.Value;
@@ -42,6 +54,18 @@ internal static class LensConfig
     public static bool Bloom => _bloom.Value;
     public static bool Grass => _grass.Value;
     public static bool RenderReport => _renderReport.Value;
+    public static string DesktopView => _desktopView.Value?.Trim() ?? "";
+    public static string Anisotropic => _anisotropic.Value?.Trim() ?? "";
+    public static float FireShadowDistance => Math.Max(0f, _fireShadowDistance.Value);
+    public static string FireShadowResolution => _fireShadowResolution.Value?.Trim() ?? "";
+    public static float SmallShadowSize => Math.Max(0f, _smallShadowSize.Value);
+    public static int SkinWeights => _skinWeights.Value;
+    public static bool WaterReflections => _waterReflections.Value;
+    public static bool TerrainInstancing => _terrainInstancing.Value;
+    public static bool OffscreenSkinning => _offscreenSkinning.Value;
+    public static int UploadMs => Math.Max(0, Math.Min(33, _uploadMs.Value));
+    public static int UploadBufferMb => Math.Max(0, Math.Min(256, _uploadBufferMb.Value));
+    public static bool WarmShaders => _warmShaders.Value;
 
     // Any setting changed while the game runs.
     public static event Action Changed;
@@ -71,6 +95,18 @@ internal static class LensConfig
         _bloom = c.CreateEntry("Bloom", true, description: "The bloom glow around bright things (false turns it off).");
         _grass = c.CreateEntry("Grass", true, description: "The small grass tufts (false hides them).");
         _renderReport = c.CreateEntry("RenderReport", true, description: "Log what the game is rendering (cameras, lights and shadows, post-processing, quality settings) once each scene has settled, to see where the time goes.");
+        _desktopView = c.CreateEntry("DesktopView", "", description: "What the game's desktop window shows: OneEye or Off (empty keeps the game's). The headset is unaffected; mirroring both eyes to the desktop costs a little each frame.");
+        _anisotropic = c.CreateEntry("Anisotropic", "", description: "Anisotropic filtering, which keeps ground and walls seen at a shallow angle sharp: Off, On (where a texture asks for it) or Forced (everywhere). Empty keeps the game's. Almost free on current graphics cards.");
+        _fireShadowDistance = c.CreateEntry("FireShadowDistance", 0f, description: "Fires and torches farther away than this, in metres, cast no shadows (0 keeps them at any distance). Their shadows are small by then, and each costs six extra renders.");
+        _fireShadowResolution = c.CreateEntry("FireShadowResolution", "", description: "Shadow resolution for fires and torches: Low, Medium, High or VeryHigh (empty keeps the game's). Lower gives softer torch shadows for less GPU work.");
+        _smallShadowSize = c.CreateEntry("SmallShadowSize", 0f, description: "Props in the world smaller than this, in metres across, cast no shadows (0 keeps every shadow). 0.5 drops the shadows of grass tufts, pebbles and the like.");
+        _skinWeights = c.CreateEntry("SkinWeights", 0, description: "Bones that move each point of a character's skin: 1, 2 or 4 (0 keeps the game's). The Quest build uses 2: slightly simpler bends, cheaper characters.");
+        _waterReflections = c.CreateEntry("WaterReflections", true, description: "Water that mirrors the scene (false turns the mirror off). Each such water renders the scene again; the render report shows whether any does.");
+        _terrainInstancing = c.CreateEntry("TerrainInstancing", false, description: "Draw the terrain with GPU instancing, in fewer draw calls (false keeps the game's). It looks the same where the terrain's shader supports it; the render report shows whether the game already does.");
+        _offscreenSkinning = c.CreateEntry("OffscreenSkinning", true, description: "Keep animating the skin of characters out of view where the game asks to (false stops it). Their skeletons still move; only their skin waits until they're seen.");
+        _uploadMs = c.CreateEntry("UploadMs", 0, description: "Milliseconds a frame for sending loaded textures and meshes to the graphics card (0 keeps the game's). More loads new areas with fewer hitches.");
+        _uploadBufferMb = c.CreateEntry("UploadBufferMb", 0, description: "Size of the buffer for those uploads, in MB (0 keeps the game's). A bigger one takes large textures without stalling.");
+        _warmShaders = c.CreateEntry("WarmShaders", false, description: "Prepare every shader variant the game ships with while it loads, so materials don't stutter the first time they're seen. The game does this on some platforms; the render report shows whether it has on yours.");
         foreach (var entry in c.Entries)
             entry.OnEntryValueChangedUntyped.Subscribe((_, _) => Changed?.Invoke());
         c.SaveToFile(false);

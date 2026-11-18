@@ -4,11 +4,13 @@ using Alta.Heat;
 using Alta.Lighting;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Lens.Tweaks;
 
 // The sun's and moon's shadows, and fires' and torches'. The game sets a fire's shadows from its settings each time a
-// pooled fire is used again, so Lens sets them after that; the sun and moon are set once, when the sky starts.
+// pooled fire is used again, so Lens sets them after that, and twice a second for fires that moved in or out of
+// FireShadowDistance; the sun and moon are set once, when the sky starts.
 internal static class Shadows
 {
     private static readonly AccessTools.FieldRef<DayTimeManager, Light> Sun = AccessTools.FieldRefAccess<DayTimeManager, Light>("sunLight");
@@ -17,6 +19,9 @@ internal static class Shadows
     private static readonly AccessTools.FieldRef<PooledFireEffect, FireSettings> FireSetup = AccessTools.FieldRefAccess<PooledFireEffect, FireSettings>("currentSettings");
 
     private static readonly Dictionary<Light, LightShadows> SkyOriginal = new();
+    private static readonly HashSet<PooledFireEffect> Fires = new();
+    private static readonly Dictionary<Light, LightShadowResolution> FireResolution = new();
+    private static float nextFires;
 
     public static void Apply()
     {
@@ -25,6 +30,8 @@ internal static class Shadows
         LensConfig.Changed += Refresh;
         if (LensConfig.SunShadows.Length > 0) LensMod.Active.Add($"sun shadows {LensConfig.SunShadows.ToLowerInvariant()}");
         if (LensConfig.FireShadows.Length > 0) LensMod.Active.Add($"fire shadows {LensConfig.FireShadows.ToLowerInvariant()}");
+        if (LensConfig.FireShadowDistance > 0f) LensMod.Active.Add($"fire shadows within {LensConfig.FireShadowDistance:0} m");
+        if (FireResolutionMode(out var r)) LensMod.Active.Add($"fire shadow resolution {r}");
     }
 
     private static void Refresh()
@@ -50,10 +57,43 @@ internal static class Shadows
 
     private static void FireSet(PooledFireEffect __instance)
     {
-        var light = FireLight(__instance);
-        var settings = FireSetup(__instance);
-        if (light == null || settings == null) return;
+        Fires.Add(__instance);
+        Fire(__instance, Head());
+    }
+
+    public static void Tick()
+    {
+        if (Fires.Count == 0 || Time.unscaledTime < nextFires) return;
+        nextFires = Time.unscaledTime + 0.5f;
+        Fires.RemoveWhere(f => f == null);
+        if (LensConfig.FireShadowDistance <= 0f) return;
+        var head = Head();
+        foreach (var fire in Fires)
+            if (fire.isActiveAndEnabled) Fire(fire, head);
+    }
+
+    private static Vector3? Head() => PlayerController.Current != null && PlayerController.Current.Head != null ? PlayerController.Current.Head.position : (Vector3?)null;
+
+    private static void Fire(PooledFireEffect fire, Vector3? head)
+    {
+        var light = FireLight(fire);
+        var settings = FireSetup(fire);
+        if (light == null || settings == null || light.TargetLight == null) return;
         var mode = Mode(LensConfig.FireShadows) ?? settings.Shadows;
-        light.Shadows = mode == LightShadows.Hard && settings.Shadows == LightShadows.None ? LightShadows.None : mode;
+        if (mode == LightShadows.Hard && settings.Shadows == LightShadows.None) mode = LightShadows.None;
+        float far = LensConfig.FireShadowDistance;
+        if (far > 0f && head != null && (light.TargetLight.transform.position - head.Value).sqrMagnitude > far * far) mode = LightShadows.None;
+        if (light.Shadows != mode) light.Shadows = mode;
+        var target = light.TargetLight;
+        if (!FireResolution.ContainsKey(target)) FireResolution[target] = target.shadowResolution;
+        var resolution = FireResolutionMode(out var r) ? r : FireResolution[target];
+        if (target.shadowResolution != resolution) target.shadowResolution = resolution;
+    }
+
+    private static bool FireResolutionMode(out LightShadowResolution resolution)
+    {
+        resolution = LightShadowResolution.FromQualitySettings;
+        return System.Enum.TryParse(LensConfig.FireShadowResolution, true, out resolution)
+               && resolution != LightShadowResolution.FromQualitySettings && System.Enum.IsDefined(typeof(LightShadowResolution), resolution);
     }
 }

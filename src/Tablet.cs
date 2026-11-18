@@ -25,17 +25,25 @@ internal static class Tablet
             .Link("resolution", "and anti-aliasing", Resolution)
             .Link("shadows", Shadows)
             .Link("distance", "trees, props, view", Distance)
-            .Link("extras", "cameras, bloom, grass", Extras);
+            .Link("extras", "effects, characters, loading", Extras);
 
-    private static Page Resolution() =>
-        Pick(Pick(Start("RESOLUTION", "Pixels each eye renders"),
-                "render scale", LensConfig._renderScale, (0f, "game"), (0.6f, "60%"), (0.7f, "70%"), (0.8f, "80%"), (0.9f, "90%"), (1.1f, "110%"), (1.25f, "125%")),
-            "anti-aliasing", LensConfig._msaa, (-1, "game"), (0, "off"), (2, "2x"), (4, "4x"), (8, "8x"));
+    private static Page Resolution()
+    {
+        var page = Start("RESOLUTION", "Pixels each eye renders");
+        Pick(page, "render scale", LensConfig._renderScale, (0f, "game"), (0.6f, "60%"), (0.7f, "70%"), (0.8f, "80%"), (0.9f, "90%"), (1.1f, "110%"), (1.25f, "125%"));
+        Pick(page, "anti-aliasing", LensConfig._msaa, (-1, "game"), (0, "off"), (2, "2x"), (4, "4x"), (8, "8x"));
+        Pick(page, "texture sharpness", LensConfig._anisotropic, ("", "game"), ("Off", "off"), ("On", "on"), ("Forced", "forced"));
+        Pick(page, "desktop window", LensConfig._desktopView, ("", "game"), ("OneEye", "one eye"), ("Off", "off"));
+        return page;
+    }
 
     private static Page Shadows()
     {
         var page = Start("SHADOWS", "Fire shadows cost the most");
         Pick(page, "fire shadows", LensConfig._fireShadows, ("", "game"), ("Hard", "hard"), ("Off", "off"));
+        Pick(page, "fire shadows within", LensConfig._fireShadowDistance, (0f, "game"), (10f, "10 m"), (20f, "20 m"), (30f, "30 m"), (50f, "50 m"));
+        Pick(page, "fire shadow detail", LensConfig._fireShadowResolution, ("", "game"), ("Low", "low"), ("Medium", "medium"), ("High", "high"));
+        Pick(page, "small props' shadows", LensConfig._smallShadowSize, (0f, "game"), (0.3f, "off under 0.3 m"), (0.5f, "off under 0.5 m"), (1f, "off under 1 m"));
         Pick(page, "distance", LensConfig._shadowDistance, (0f, "game"), (20f, "20 m"), (40f, "40 m"), (70f, "70 m"), (100f, "100 m"), (150f, "150 m"));
         Pick(page, "cascades", LensConfig._shadowCascades, (0, "game"), (1, "1"), (2, "2"), (4, "4"));
         Pick(page, "resolution", LensConfig._shadowResolution, ("", "game"), ("Low", "low"), ("Medium", "medium"), ("High", "high"), ("VeryHigh", "very high"));
@@ -61,6 +69,13 @@ internal static class Tablet
         Pick(page, "overview camera", LensConfig._overviewCamera, (true, "on"), (false, "off"));
         Pick(page, "bloom", LensConfig._bloom, (true, "on"), (false, "off"));
         Pick(page, "grass", LensConfig._grass, (true, "on"), (false, "off"));
+        Pick(page, "water reflections", LensConfig._waterReflections, (true, "on"), (false, "off"));
+        Pick(page, "skin out of view", LensConfig._offscreenSkinning, (true, "game"), (false, "off"));
+        Pick(page, "skin weights", LensConfig._skinWeights, (0, "game"), (1, "1 bone"), (2, "2 bones"), (4, "4 bones"));
+        Pick(page, "terrain instancing", LensConfig._terrainInstancing, (false, "game"), (true, "on"));
+        Pick(page, "upload time", LensConfig._uploadMs, (0, "game"), (2, "2 ms"), (4, "4 ms"), (8, "8 ms"));
+        Pick(page, "upload buffer", LensConfig._uploadBufferMb, (0, "game"), (16, "16 MB"), (32, "32 MB"), (64, "64 MB"));
+        Pick(page, "warm shaders", LensConfig._warmShaders, (false, "game"), (true, "on, next load"));
         page.Button("render report", "to the log now", RenderReport.Now);
         return page;
     }

@@ -45,7 +45,9 @@ public class LensMod : MelonMod
         Distances.Apply();
         Cameras.Apply();
         Bloom.Apply();
-        Grass.Apply();
+        Props.Apply();
+        World.Apply();
+        if (LensConfig.WarmShaders) Active.Add("shader warm-up");
         MelonEvents.OnApplicationLateStart.Subscribe(() =>
         {
             Log.Msg("On: " + (Active.Count == 0 ? "nothing (every setting is the game's own)" : string.Join(", ", Active)));
@@ -76,6 +78,8 @@ public class LensMod : MelonMod
         if (_harmony == null) return;
         Quality.Tick();
         Cameras.Tick();
+        Shadows.Tick();
+        World.Tick();
         RenderReport.Tick();
         Unconfirmed.Tick();
     }
@@ -90,6 +94,7 @@ public class LensMod : MelonMod
     {
         if (_harmony == null) return;
         RenderReport.SceneLoaded(sceneName);
+        Shaders.Warm();
     }
 
     // Patches one method, or warns and carries on if the game doesn't have it.

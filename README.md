@@ -15,12 +15,17 @@ reloading the file) applies straight away, so you can compare in the headset.
 | --- | --- | --- |
 | `RenderScale` | The resolution each eye renders at, as a share of the headset's. The biggest saving there is, and the most visible. SteamVR's own resolution setting multiplies with it. | `0.8` |
 | `Msaa` | Anti-aliasing samples. The game renders the world deferred, which can't use MSAA, so this may only change the hands, items and UI; check the frame timing. | `0` |
+| `Anisotropic` | Keeps ground and walls seen at a shallow angle sharp: `Off`, `On` (where a texture asks) or `Forced`. Looks better, for almost nothing on current graphics cards. | `Forced` |
+| `DesktopView` | What the game's desktop window shows: `OneEye` or `Off`. The headset is unaffected; streamers will want to keep it. | `OneEye` |
 
 ### Shadows
 
 | Setting | What it does | To try |
 | --- | --- | --- |
 | `FireShadows` | Fires and torches cast shadows, and each shadowed one renders the scene six more times. `Hard` drops the soft edges, `Off` the shadows. Towns full of torches gain the most. | `Off` |
+| `FireShadowDistance` | Fires farther away than this, in metres, cast no shadows. Their shadows are small by then; it's much cheaper than `FireShadows = Off` for most of the look. | `20` |
+| `FireShadowResolution` | Fire and torch shadow resolution: `Low`, `Medium`, `High` or `VeryHigh`. | `Low` |
+| `SmallShadowSize` | Props in the world smaller than this, in metres across, cast no shadows: grass tufts, pebbles and the like. | `0.5` |
 | `ShadowDistance` | How far away shadows are drawn. The game moves it with the frame rate; Lens holds it. | `40` |
 | `ShadowCascades` | Sun shadow cascades. Fewer is faster, with blurrier shadows near you. | `2` |
 | `ShadowResolution` | Shadow map resolution: `Low`, `Medium`, `High` or `VeryHigh`. | `Medium` |
@@ -44,6 +49,12 @@ reloading the file) applies straight away, so you can compare in the headset.
 | `OverviewCamera` | `false` skips the scene's "Overview Camera", which FastTale found rendering in VR. The render report shows what it draws to. |
 | `Bloom` | `false` turns off the glow around bright things. |
 | `Grass` | `false` hides the small grass tufts. |
+| `WaterReflections` | `false` stops water mirroring the scene, which renders it again for each such water. The render report shows whether any does. |
+| `OffscreenSkinning` | `false` stops animating the skin of characters out of view where the game asks to keep it. Their skeletons still move. |
+| `SkinWeights` | Bones that move each point of a character's skin: `1`, `2` or `4`. The Quest build uses `2`. |
+| `TerrainInstancing` | `true` draws the terrain with GPU instancing, in fewer draw calls. Same look where its shader supports it; check the terrain still shows. |
+| `UploadMs`, `UploadBufferMb` | Time a frame and buffer size for sending loaded textures and meshes to the graphics card. More means fewer hitches walking into new areas; try `4` and `64`. |
+| `WarmShaders` | `true` prepares every shader variant the game ships while it loads, so materials don't stutter the first time they're seen. Loading takes longer, once. |
 
 ## On the tablet
 
