@@ -45,6 +45,13 @@ reloading the file) applies straight away, so you can compare in the headset.
 | `Bloom` | `false` turns off the glow around bright things. |
 | `Grass` | `false` hides the small grass tufts. |
 
+## On the tablet
+
+With [TabletUILib](https://github.com/SmoothieBrain/TabletUILib) installed too, Lens is on the tablet's wheel. Each
+row shows a setting; press it to step to the next value. A change applies at once and the tablet asks to keep it:
+unless you press Keep within 15 seconds of the last change, everything goes back to how it was. Nothing is saved
+until you keep it. Lens works the same without TabletUILib, with the settings in the file only.
+
 ## What costs the most
 
 With `RenderReport` on (the default), Lens logs what the game is rendering once each scene has settled: every
@@ -61,7 +68,7 @@ Put `Lens.dll` from the latest release in the game's `Mods` folder.
 
 ## Building
 
-`dotnet build -c Release`, with `GameDir` in `Local.props` set to a client install with MelonLoader. CI builds
+`dotnet build -c Release`, with `GameDir` in `Local.props` set to a client install with MelonLoader and TabletUILib's `TabletUILib-PC.dll` saved as `lib/TabletUILib.dll`. CI builds
 against [att-stubs](https://github.com/ChatonIsHere/att-stubs) and releases each push to main as YY.M.N.
 
 ## Credits

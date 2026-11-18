@@ -34,6 +34,8 @@ internal static class RenderReport
         LensMod.Log.Msg(Build());
     }
 
+    public static void Now() => LensMod.Log.Msg(Build());
+
     private static string Build()
     {
         var s = new StringBuilder($"Render report, scene {scene}:\n");

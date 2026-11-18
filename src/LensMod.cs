@@ -8,6 +8,8 @@ using MelonLoader;
 
 [assembly: MelonInfo(typeof(Lens.LensMod), "Lens", Lens.LensMod.Version, "ChatonIsHere", "https://github.com/ChatonIsHere/Lens")]
 [assembly: MelonGame("Alta", "A Township Tale")]
+// Loaded first when it's there, for the tablet; Lens works without it.
+[assembly: MelonOptionalDependencies("TabletUILib")]
 
 namespace Lens;
 
@@ -45,8 +47,29 @@ public class LensMod : MelonMod
         Bloom.Apply();
         Grass.Apply();
         MelonEvents.OnApplicationLateStart.Subscribe(() =>
-            Log.Msg("On: " + (Active.Count == 0 ? "nothing (every setting is the game's own)" : string.Join(", ", Active))));
+        {
+            Log.Msg("On: " + (Active.Count == 0 ? "nothing (every setting is the game's own)" : string.Join(", ", Active)));
+            AddToTablet();
+        });
     }
+
+    // The tablet app, with TabletUILib. Its types are only touched inside Tablet, so without it nothing loads them.
+    private static void AddToTablet()
+    {
+        if (!RegisteredMelons.Any(m => m.Info.Name == "TabletUILib")) return;
+        try
+        {
+            RegisterTablet();
+            Log.Msg("Settings are on the tablet (Lens, on the wheel).");
+        }
+        catch (Exception e)
+        {
+            Log.Warning($"Couldn't add Lens to the tablet ({e.GetType().Name}: {e.Message}); the settings are still in MelonPreferences.cfg.");
+        }
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void RegisterTablet() => Tablet.Register();
 
     public override void OnUpdate()
     {
@@ -54,6 +77,13 @@ public class LensMod : MelonMod
         Quality.Tick();
         Cameras.Tick();
         RenderReport.Tick();
+        Unconfirmed.Tick();
+    }
+
+    // Changes nobody kept don't outlive the game.
+    public override void OnApplicationQuit()
+    {
+        if (_harmony != null) Unconfirmed.Revert(" (the game closed before they were kept)");
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)

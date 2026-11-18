@@ -40,6 +40,8 @@
     <Reference Include="UnityEngine.TerrainModule" HintPath="$(Managed)UnityEngine.TerrainModule.dll" Private="false" />
     <Reference Include="MelonLoader" HintPath="$(MelonLoaderDir)MelonLoader.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(MelonLoaderDir)0Harmony.dll" Private="false" />
+    <!-- Optional at run time (the tablet). CI downloads it; locally put TabletUILib-PC.dll from its releases in lib/. -->
+    <Reference Include="TabletUILib" HintPath="lib\TabletUILib.dll" Private="false" />
   </ItemGroup>
 
 </Project>

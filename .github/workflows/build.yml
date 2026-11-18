@@ -22,6 +22,9 @@ jobs:
           repository: ChatonIsHere/att-stubs
           ref: full
           path: att-stubs
+      # TabletUILib, for the optional tablet page (MIT, github.com/SmoothieBrain/TabletUILib).
+      - shell: bash
+        run: mkdir -p lib && curl -sfL -o lib/TabletUILib.dll https://github.com/SmoothieBrain/TabletUILib/releases/download/v1.2.0/TabletUILib-PC.dll
       # Each push to main is released as YY.M.N (CalVer): N is one more than this month's last release.
       - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         shell: bash

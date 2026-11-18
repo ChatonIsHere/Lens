@@ -7,23 +7,23 @@ namespace Lens;
 // (in a mods menu, or the file reloaded) apply straight away.
 internal static class LensConfig
 {
-    private static MelonPreferences_Entry<float> _renderScale;
-    private static MelonPreferences_Entry<int> _msaa;
-    private static MelonPreferences_Entry<float> _shadowDistance;
-    private static MelonPreferences_Entry<int> _shadowCascades;
-    private static MelonPreferences_Entry<string> _shadowResolution;
-    private static MelonPreferences_Entry<string> _sunShadows;
-    private static MelonPreferences_Entry<string> _fireShadows;
-    private static MelonPreferences_Entry<int> _pixelLights;
-    private static MelonPreferences_Entry<float> _lodBias;
-    private static MelonPreferences_Entry<float> _treeDistance;
-    private static MelonPreferences_Entry<float> _viewDistance;
-    private static MelonPreferences_Entry<float> _cullDistance;
-    private static MelonPreferences_Entry<bool> _otherPlayersCameras;
-    private static MelonPreferences_Entry<bool> _overviewCamera;
-    private static MelonPreferences_Entry<bool> _bloom;
-    private static MelonPreferences_Entry<bool> _grass;
-    private static MelonPreferences_Entry<bool> _renderReport;
+    internal static MelonPreferences_Entry<float> _renderScale;
+    internal static MelonPreferences_Entry<int> _msaa;
+    internal static MelonPreferences_Entry<float> _shadowDistance;
+    internal static MelonPreferences_Entry<int> _shadowCascades;
+    internal static MelonPreferences_Entry<string> _shadowResolution;
+    internal static MelonPreferences_Entry<string> _sunShadows;
+    internal static MelonPreferences_Entry<string> _fireShadows;
+    internal static MelonPreferences_Entry<int> _pixelLights;
+    internal static MelonPreferences_Entry<float> _lodBias;
+    internal static MelonPreferences_Entry<float> _treeDistance;
+    internal static MelonPreferences_Entry<float> _viewDistance;
+    internal static MelonPreferences_Entry<float> _cullDistance;
+    internal static MelonPreferences_Entry<bool> _otherPlayersCameras;
+    internal static MelonPreferences_Entry<bool> _overviewCamera;
+    internal static MelonPreferences_Entry<bool> _bloom;
+    internal static MelonPreferences_Entry<bool> _grass;
+    internal static MelonPreferences_Entry<bool> _renderReport;
 
     public static float RenderScale => Math.Max(0f, _renderScale.Value);
     public static int Msaa => _msaa.Value;
@@ -46,9 +46,14 @@ internal static class LensConfig
     // Any setting changed while the game runs.
     public static event Action Changed;
 
+    private static MelonPreferences_Category category;
+    internal static System.Collections.Generic.List<MelonPreferences_Entry> Entries => category.Entries;
+
+    public static void Save() => category.SaveToFile(false);
+
     public static void Init()
     {
-        var c = MelonPreferences.CreateCategory("Lens", "Lens");
+        var c = category = MelonPreferences.CreateCategory("Lens", "Lens");
         _renderScale = c.CreateEntry("RenderScale", 0f, description: "Resolution each eye renders at, as a share of the headset's (0 keeps the game's, 1.0). 0.8 draws about a third fewer pixels; SteamVR's own resolution setting multiplies with it.");
         _msaa = c.CreateEntry("Msaa", -1, description: "Anti-aliasing samples: 0, 2, 4 or 8 (-1 keeps the game's). Fewer is faster with more jagged edges.");
         _shadowDistance = c.CreateEntry("ShadowDistance", 0f, description: "How far away shadows are drawn, in metres (0 keeps the game's, which it lowers and raises with the frame rate).");
