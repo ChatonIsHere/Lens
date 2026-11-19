@@ -54,12 +54,14 @@ internal static class Cameras
                 }
             if (overview == null) return;
         }
-        if (!LensConfig.OverviewCamera && overview.enabled)
+        // Only with a headset on: without one it's the only camera there is.
+        bool wanted = LensConfig.OverviewCamera || !UnityEngine.XR.XRSettings.isDeviceActive;
+        if (!wanted && overview.enabled)
         {
             overview.enabled = false;
             overviewOff = true;
         }
-        else if (LensConfig.OverviewCamera && overviewOff)
+        else if (wanted && overviewOff)
         {
             overview.enabled = true; // only one Lens turned off
             overviewOff = false;

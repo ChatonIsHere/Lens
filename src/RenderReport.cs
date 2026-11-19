@@ -51,7 +51,7 @@ internal static class RenderReport
             var target = c.targetTexture == null ? $"display {c.targetDisplay}" : $"texture {c.targetTexture.name} {c.targetTexture.width}x{c.targetTexture.height}";
             s.Append($"  Camera {c.name}: depth {c.depth}, {(c.stereoEnabled ? "stereo" : "mono")}, to {target}, {c.actualRenderingPath}, " +
                      $"far {c.farClipPlane:0} m, post-processing {(c.GetComponent<PostProcessLayer>() != null ? "yes" : "no")}, " +
-                     $"occlusion culling {c.useOcclusionCulling}\n");
+                     $"occlusion culling {c.useOcclusionCulling}, tag {c.tag}{(c == Camera.main ? " (Camera.main)" : "")}\n");
         }
         var lights = Object.FindObjectsOfType<Light>().Where(l => l.isActiveAndEnabled).ToList();
         s.Append($"  Lights on: {lights.Count} (" + string.Join(", ", lights.GroupBy(l => l.type).Select(g => $"{g.Count()} {g.Key}")) + "); with shadows: " +
