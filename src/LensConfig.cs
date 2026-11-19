@@ -105,7 +105,7 @@ internal static class LensConfig
         _uploadMs = c.CreateEntry("UploadMs", 0, description: "Milliseconds a frame for sending loaded textures and meshes to the graphics card (0 keeps the game's). More loads new areas with fewer hitches.");
         _uploadBufferMb = c.CreateEntry("UploadBufferMb", 0, description: "Size of the buffer for those uploads, in MB (0 keeps the game's). A bigger one takes large textures without stalling.");
         _warmShaders = c.CreateEntry("WarmShaders", true, description: "Prepare every shader variant the game ships with as each scene loads, so materials don't stutter the first time they're seen. The game only does this on some platforms, not PC; it takes about 50 ms, once.");
-        _benchmark = c.CreateEntry("Benchmark", false, description: "Measure what each setting saves: once you're in game, stand still for about 40 minutes while Lens tries each one on its own and logs the GPU time it takes (from SteamVR). Every setting is put back afterwards and this turns itself off.");
+        _benchmark = c.CreateEntry("Benchmark", false, description: "Measure what each setting saves: once you're in game, stand still somewhere busy (a town with torches lit) for about 30 minutes, after the world has loaded in, while Lens tries each one on its own and logs the GPU and CPU time it takes (from SteamVR). Every setting is put back afterwards and this turns itself off.");
         foreach (var entry in c.Entries)
             entry.OnEntryValueChangedUntyped.Subscribe((_, _) => Changed?.Invoke());
         c.SaveToFile(false);

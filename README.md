@@ -69,7 +69,12 @@ camera and what it draws to, the lights and which cast shadows, post-processing 
 terrain, water reflections and the quality settings. Much of that is set in the game's scenes, not its code, so
 this is the place to see it.
 
-To measure a change, use SteamVR's frame timing graph (in SteamVR's settings, under Developer): it shows the GPU's
+To measure every setting at once, set `Benchmark = true` and stand still somewhere busy (a town with torches lit)
+once you're in game. Lens waits for the world to finish loading in, then tries each setting on its own for 40
+seconds against the game's own settings either side, and logs a table of the GPU and CPU time each takes, from
+SteamVR, with a copy in `UserData/Lens/`. It takes about half an hour, puts every setting back and turns itself off.
+
+To check one change by hand, use SteamVR's frame timing graph (in SteamVR's settings, under Developer): it shows the GPU's
 and CPU's time for each frame. Change one setting at a time.
 
 ## Install
