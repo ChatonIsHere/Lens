@@ -82,12 +82,15 @@ public class LensMod : MelonMod
         World.Tick();
         RenderReport.Tick();
         Unconfirmed.Tick();
+        Benchmark.Tick();
     }
 
     // Changes nobody kept don't outlive the game.
     public override void OnApplicationQuit()
     {
-        if (_harmony != null) Unconfirmed.Revert(" (the game closed before they were kept)");
+        if (_harmony == null) return;
+        Benchmark.Restore();
+        Unconfirmed.Revert(" (the game closed before they were kept)");
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)

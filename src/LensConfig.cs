@@ -31,11 +31,11 @@ internal static class LensConfig
     internal static MelonPreferences_Entry<float> _smallShadowSize;
     internal static MelonPreferences_Entry<int> _skinWeights;
     internal static MelonPreferences_Entry<bool> _waterReflections;
-    internal static MelonPreferences_Entry<bool> _terrainInstancing;
     internal static MelonPreferences_Entry<bool> _offscreenSkinning;
     internal static MelonPreferences_Entry<int> _uploadMs;
     internal static MelonPreferences_Entry<int> _uploadBufferMb;
     internal static MelonPreferences_Entry<bool> _warmShaders;
+    internal static MelonPreferences_Entry<bool> _benchmark;
 
     public static float RenderScale => Math.Max(0f, _renderScale.Value);
     public static int Msaa => _msaa.Value;
@@ -61,7 +61,6 @@ internal static class LensConfig
     public static float SmallShadowSize => Math.Max(0f, _smallShadowSize.Value);
     public static int SkinWeights => _skinWeights.Value;
     public static bool WaterReflections => _waterReflections.Value;
-    public static bool TerrainInstancing => _terrainInstancing.Value;
     public static bool OffscreenSkinning => _offscreenSkinning.Value;
     public static int UploadMs => Math.Max(0, Math.Min(33, _uploadMs.Value));
     public static int UploadBufferMb => Math.Max(0, Math.Min(256, _uploadBufferMb.Value));
@@ -102,11 +101,11 @@ internal static class LensConfig
         _smallShadowSize = c.CreateEntry("SmallShadowSize", 0f, description: "Props in the world smaller than this, in metres across, cast no shadows (0 keeps every shadow). 0.5 drops the shadows of grass tufts, pebbles and the like.");
         _skinWeights = c.CreateEntry("SkinWeights", 0, description: "Bones that move each point of a character's skin: 1, 2 or 4 (0 keeps the game's). The Quest build uses 2: slightly simpler bends, cheaper characters.");
         _waterReflections = c.CreateEntry("WaterReflections", true, description: "Water that mirrors the scene (false turns the mirror off). Each such water renders the scene again; the render report shows whether any does.");
-        _terrainInstancing = c.CreateEntry("TerrainInstancing", false, description: "Draw the terrain with GPU instancing, in fewer draw calls (false keeps the game's). It looks the same where the terrain's shader supports it; the render report shows whether the game already does.");
         _offscreenSkinning = c.CreateEntry("OffscreenSkinning", true, description: "Keep animating the skin of characters out of view where the game asks to (false stops it). Their skeletons still move; only their skin waits until they're seen.");
         _uploadMs = c.CreateEntry("UploadMs", 0, description: "Milliseconds a frame for sending loaded textures and meshes to the graphics card (0 keeps the game's). More loads new areas with fewer hitches.");
         _uploadBufferMb = c.CreateEntry("UploadBufferMb", 0, description: "Size of the buffer for those uploads, in MB (0 keeps the game's). A bigger one takes large textures without stalling.");
-        _warmShaders = c.CreateEntry("WarmShaders", false, description: "Prepare every shader variant the game ships with while it loads, so materials don't stutter the first time they're seen. The game does this on some platforms; the render report shows whether it has on yours.");
+        _warmShaders = c.CreateEntry("WarmShaders", true, description: "Prepare every shader variant the game ships with as each scene loads, so materials don't stutter the first time they're seen. The game only does this on some platforms, not PC; it takes about 50 ms, once.");
+        _benchmark = c.CreateEntry("Benchmark", false, description: "Measure what each setting saves: once you're in game, stand still for about 40 minutes while Lens tries each one on its own and logs the GPU time it takes (from SteamVR). Every setting is put back afterwards and this turns itself off.");
         foreach (var entry in c.Entries)
             entry.OnEntryValueChangedUntyped.Subscribe((_, _) => Changed?.Invoke());
         c.SaveToFile(false);

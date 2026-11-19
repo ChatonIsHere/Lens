@@ -37,6 +37,7 @@
     <Reference Include="Township.PostProcessing" HintPath="$(Managed)Township.PostProcessing.dll" Private="false" />
     <Reference Include="UnityEngine.XRModule" HintPath="$(Managed)UnityEngine.XRModule.dll" Private="false" />
     <Reference Include="UnityEngine.VRModule" HintPath="$(Managed)UnityEngine.VRModule.dll" Private="false" />
+    <Reference Include="Unity.XR.OpenVR" HintPath="$(Managed)Unity.XR.OpenVR.dll" Private="false" />
     <Reference Include="UnityEngine.TerrainModule" HintPath="$(Managed)UnityEngine.TerrainModule.dll" Private="false" />
     <Reference Include="MelonLoader" HintPath="$(MelonLoaderDir)MelonLoader.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(MelonLoaderDir)0Harmony.dll" Private="false" />

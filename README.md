@@ -1,7 +1,7 @@
 # Lens
 
 A MelonLoader mod for playing A Township Tale on PC VR at a higher frame rate, by having the game draw less. Every
-setting starts at the game's own, so installing Lens changes nothing you can see; you choose what to trade. It works
+setting that changes the picture starts at the game's own, so installing Lens changes nothing you can see; you choose what to trade. It works
 on clients only and does nothing on a server or a client without graphics.
 
 ## Settings
@@ -25,7 +25,7 @@ reloading the file) applies straight away, so you can compare in the headset.
 | `FireShadows` | Fires and torches cast shadows, and each shadowed one renders the scene six more times. `Hard` drops the soft edges, `Off` the shadows. Towns full of torches gain the most. | `Off` |
 | `FireShadowDistance` | Fires farther away than this, in metres, cast no shadows. Their shadows are small by then; it's much cheaper than `FireShadows = Off` for most of the look. | `20` |
 | `FireShadowResolution` | Fire and torch shadow resolution: `Low`, `Medium`, `High` or `VeryHigh`. | `Low` |
-| `SmallShadowSize` | Props in the world smaller than this, in metres across, cast no shadows: grass tufts, pebbles and the like. | `0.5` |
+| `SmallShadowSize` | Things in the world smaller than this, in metres across, cast no shadows: grass tufts, pebbles, small items and the like. | `0.5` |
 | `ShadowDistance` | How far away shadows are drawn. The game moves it with the frame rate; Lens holds it. | `40` |
 | `ShadowCascades` | Sun shadow cascades. Fewer is faster, with blurrier shadows near you. | `2` |
 | `ShadowResolution` | Shadow map resolution: `Low`, `Medium`, `High` or `VeryHigh`. | `Medium` |
@@ -52,9 +52,8 @@ reloading the file) applies straight away, so you can compare in the headset.
 | `WaterReflections` | `false` stops water mirroring the scene, which renders it again for each such water. The render report shows whether any does. |
 | `OffscreenSkinning` | `false` stops animating the skin of characters out of view where the game asks to keep it. Their skeletons still move. |
 | `SkinWeights` | Bones that move each point of a character's skin: `1`, `2` or `4`. The Quest build uses `2`. |
-| `TerrainInstancing` | `true` draws the terrain with GPU instancing, in fewer draw calls. Same look where its shader supports it; check the terrain still shows. |
 | `UploadMs`, `UploadBufferMb` | Time a frame and buffer size for sending loaded textures and meshes to the graphics card. More means fewer hitches walking into new areas; try `4` and `64`. |
-| `WarmShaders` | `true` prepares every shader variant the game ships while it loads, so materials don't stutter the first time they're seen. Loading takes longer, once. |
+| `WarmShaders` | On by default: prepares every shader variant the game ships as each scene loads, so materials don't stutter the first time they're seen. The game only does this on some platforms, not PC; it takes about 50 ms. |
 
 ## On the tablet
 
