@@ -43,6 +43,14 @@ internal static class Benchmark
             WaitForSteadyWorld();
             return;
         }
+        if (PlayerController.Current == null)
+        {
+            // Out of the world (a menu measures nothing useful): stop, and start over once back in.
+            LensMod.Log.Warning($"Benchmark: left the world at step {at + 1}/{steps.Count}; stopped, and starting over once back in game.");
+            Restore();
+            Reset();
+            return;
+        }
         var step = steps[at];
         float t = Time.unscaledTime - stepStart;
         if (t >= Settle) Sample(step);
@@ -56,7 +64,11 @@ internal static class Benchmark
     // Starts once the GPU's time a frame has held within 10% for four 30 s windows, at least 3 minutes after joining.
     private static void WaitForSteadyWorld()
     {
-        if (PlayerController.Current == null) return;
+        if (PlayerController.Current == null)
+        {
+            if (joined >= 0f) Reset(); // the wait starts again in the next world
+            return;
+        }
         float now = Time.unscaledTime;
         if (joined < 0f)
         {
@@ -213,11 +225,17 @@ internal static class Benchmark
         {
             LensMod.Log.Warning($"Benchmark: couldn't write the table: {e.Message}");
         }
+        Reset();
+        LensConfig._benchmark.Value = false;
+        LensConfig.Save();
+    }
+
+    private static void Reset()
+    {
         steps = null;
         joined = -1f;
         windows.Clear();
-        LensConfig._benchmark.Value = false;
-        LensConfig.Save();
+        windowGpu.Clear();
     }
 
     // Everything as it was before the benchmark, also if the game closes during it.

@@ -14,7 +14,7 @@ reloading the file) applies straight away, so you can compare in the headset.
 | Setting | What it does | To try |
 | --- | --- | --- |
 | `RenderScale` | The resolution each eye renders at, as a share of the headset's. The biggest saving there is, and the most visible. SteamVR's own resolution setting multiplies with it. | `0.8` |
-| `Msaa` | Anti-aliasing samples. The game renders the world deferred, which can't use MSAA, so this may only change the hands, items and UI; check the frame timing. | `0` |
+| `Msaa` | Anti-aliasing samples (the game's 2). In VR the game renders forward, so this applies to everything; off shows jagged edges, and saves about as much as `RenderScale = 0.8`. | `0` |
 | `Anisotropic` | Keeps ground and walls seen at a shallow angle sharp: `Off`, `On` (where a texture asks) or `Forced`. Looks better, for almost nothing on current graphics cards. | `Forced` |
 | `DesktopView` | What the game's desktop window shows: `OneEye` or `Off`. The headset is unaffected; streamers will want to keep it. | `OneEye` |
 
@@ -73,6 +73,10 @@ To measure every setting at once, set `Benchmark = true` and stand still somewhe
 once you're in game. Lens waits for the world to finish loading in, then tries each setting on its own for 40
 seconds against the game's own settings either side, and logs a table of the GPU and CPU time each takes, from
 SteamVR, with a copy in `UserData/Lens/`. It takes about half an hour, puts every setting back and turns itself off.
+
+A frame that misses the headset's rate (6.9 ms on a 144 Hz headset) has SteamVR drop to half the rate, so a
+saving matters most when it gets the GPU's time under that line: on a first test in the world, the game's own
+settings took 9 to 12 ms a frame at 144 Hz, and `RenderScale = 0.8` or `Msaa = 0` each brought it back to about 130 fps.
 
 To check one change by hand, use SteamVR's frame timing graph (in SteamVR's settings, under Developer): it shows the GPU's
 and CPU's time for each frame. Change one setting at a time.
